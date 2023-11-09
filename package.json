@@ -1,0 +1,9 @@
+{
+  "name": "com.bananaparty.touchinput",
+  "version": "1.0.0",
+  "type": "library",
+  "displayName": "Touch Input",
+  "unity": "2021.3",
+  "description": "Fully cross-platform touch input.",
+  "author": "github.com/forcepusher"
+}
