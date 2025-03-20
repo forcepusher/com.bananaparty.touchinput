@@ -22,6 +22,7 @@ namespace BananaParty.TouchInput
                 if (!_touchIdToFinger.TryGetValue(touch.fingerId, out Finger finger))
                 {
                     finger = new Finger(touch.position);
+                    //Debug.Log($"finger {touch.fingerId} is {touch.phase}, so it's {FingerPhase.Pressed}");
                     _touchIdToFinger[touch.fingerId] = finger;
                     _newFingers.Enqueue(finger);
                 }
@@ -32,14 +33,27 @@ namespace BananaParty.TouchInput
 
                     if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
                     {
+                        //Debug.Log($"finger {touch.fingerId} is {touch.phase}, so it's {FingerPhase.Lifted}");
                         finger.Phase = FingerPhase.Lifted;
                         _touchIdToFinger.Remove(touch.fingerId);
                     }
                     else
                     {
+                        //Debug.Log($"finger {touch.fingerId} is {touch.phase}, so it's {FingerPhase.Held}");
                         finger.Phase = FingerPhase.Held;
                     }
                 }
+            }
+
+            // Force clear touches when nothing is held just so the
+            // WebGLInput.mobileKeyboardSupport = false;
+            // could properly work without getting stuck multitouch fingers
+            if (Input.touchCount == 0)
+            {
+                foreach (int touchId in _touchIdToFinger.Keys)
+                    _touchIdToFinger[touchId].Phase = FingerPhase.Lifted;
+
+                _touchIdToFinger.Clear();
             }
         }
     }

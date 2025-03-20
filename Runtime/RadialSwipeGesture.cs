@@ -3,24 +3,22 @@ using UnityEngine;
 
 namespace BananaParty.TouchInput
 {
-    public class SwipeGesture
+    public class RadialSwipeGesture
     {
-        private readonly Vector2 _direction;
-        private readonly float _angleLimit;
         private readonly float _deltaThreshold;
         private readonly float _timeThreshold;
 
-        public SwipeGesture(Vector2 direction, float angleLimit = 45, float deltaThreshold = 0.05f, float timeTreshold = 0.3f)
+        public RadialSwipeGesture(float deltaThreshold = 0.1f, float timeTreshold = 0.2f)
         {
-            _direction = direction;
-            _angleLimit = angleLimit;
             _deltaThreshold = deltaThreshold;
             _timeThreshold = timeTreshold;
         }
 
-        private List<Finger> _fingers = new();
+        private readonly List<Finger> _fingers = new();
 
         public bool IsActuated { get; private set; }
+
+        public Vector2 SwipeDelta { get; private set; }
 
         public void AddFinger(Finger finger)
         {
@@ -30,27 +28,26 @@ namespace BananaParty.TouchInput
         public void PollInput()
         {
             IsActuated = false;
+            SwipeDelta = Vector2.zero;
 
             for (int fingerIterator = _fingers.Count - 1; fingerIterator >= 0; fingerIterator--)
             {
                 Finger finger = _fingers[fingerIterator];
 
-                if (finger.ElapsedTime <= _timeThreshold)
+                if (finger.Phase == FingerPhase.Lifted)
                 {
-                    Vector2 swipeDelta = finger.NormalizedPosition - finger.NormalizedStartPosition;
-                    if (swipeDelta.magnitude >= _deltaThreshold)
+                    if (finger.ElapsedTime <= _timeThreshold)
                     {
-                        if (Vector2.Angle(_direction, swipeDelta) <= _angleLimit)
+                        Vector2 swipeDelta = finger.NormalizedPosition - finger.NormalizedStartPosition;
+                        if (swipeDelta.magnitude >= _deltaThreshold)
                         {
                             IsActuated = true;
-                            _fingers.RemoveAt(fingerIterator);
-                            break;
+                            SwipeDelta = swipeDelta;
                         }
                     }
-                }
 
-                if (finger.Phase == FingerPhase.Lifted)
                     _fingers.RemoveAt(fingerIterator);
+                }
             }
         }
     }
